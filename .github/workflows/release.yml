@@ -1,0 +1,74 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Check the version numbers and the changelog
+        run: |
+          fail() { echo "::error::$1"; exit 1; }
+          version="${GITHUB_REF_NAME#v}"
+
+          grep -qxF " * Version: $version" email-firewall.php \
+            || fail "The Version header in email-firewall.php is not $version."
+          grep -qxF "Stable tag: $version" readme.txt \
+            || fail "The Stable tag in readme.txt is not $version."
+
+          awk -v heading="= $version =" '$0 == heading { found = 1; next } found && /^=/ { exit } found' readme.txt \
+            > "$RUNNER_TEMP/release-notes.md"
+          grep -q . "$RUNNER_TEMP/release-notes.md" \
+            || fail "readme.txt has no changelog entry for $version."
+
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: Build
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gettext
+          ./build.sh
+
+      - name: Check the syntax on PHP 7.4
+        run: |
+          docker run --rm -v "$PWD/.out/email-firewall":/app:ro -w /app php:7.4-cli \
+            sh -c "find . -name '*.php' -print0 | xargs -0 -n1 php -l"
+
+      - name: Plugin Check
+        uses: WordPress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
+        with:
+          build-dir: .out/email-firewall
+          # Warnings fail the release too: Plugin Check has to stay clean.
+          strict: true
+
+      # Deploys only after the plugin is approved on WordPress.org and its SVN credentials are set up in
+      # the repository: the SVN_USERNAME variable and the SVN_PASSWORD secret. It skips a version that is
+      # already on WordPress.org.
+      - name: Deploy to WordPress.org
+        if: vars.SVN_USERNAME != ''
+        uses: 10up/action-wordpress-plugin-deploy@54bd289b8525fd23a5c365ec369185f2966529c2 # 2.3.0
+        env:
+          SVN_USERNAME: ${{ vars.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          # The slug defaults to the repository name, which kept the old wp-email-firewall name.
+          SLUG: email-firewall
+          BUILD_DIR: .out/email-firewall
+
+      - name: Create the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # A re-run, e.g. to deploy a version to WordPress.org after the approval, finds the release there.
+        run: |
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            echo "The GitHub release $GITHUB_REF_NAME already exists."
+            exit 0
+          fi
+          gh release create "$GITHUB_REF_NAME" .out/email-firewall.zip --verify-tag \
+            --title "Email Firewall $VERSION" --notes-file "$RUNNER_TEMP/release-notes.md"

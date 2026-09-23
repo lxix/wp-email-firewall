@@ -11,6 +11,7 @@ It was called WP Email Firewall (`wp-email-firewall`) until WordPress.org submis
 - `readme.txt`: the WordPress.org readme. Its `Stable tag` always equals the `Version` header, and every release gets a changelog entry.
 - `languages/`: the hu_HU `.po` source and its compiled `.mo` file (the source strings are English)
 - `build.sh`: builds the release zip into `.out/`
+- `.github/workflows/release.yml`: builds and publishes a release when a version tag is pushed
 - `test-env/`: Docker test environment
 
 ## Conventions
@@ -56,9 +57,18 @@ test-env/wp --exec='WP_CLI::add_wp_hook("locale", static fn () => "hu_HU");' eva
 docker run --rm -v "$PWD":/app:ro -w /app php:7.4-cli php -l email-firewall.php
 
 # Plugin Check (the plugin-check plugin), on the files that go into the zip
-test-env/wp plugin check email-firewall --exclude-directories=test-env,.idea,.out --exclude-files=CLAUDE.md,build.sh,.gitattributes,.gitignore
+test-env/wp plugin check email-firewall --exclude-directories=test-env,.github,.wordpress-org,.idea,.out --exclude-files=CLAUDE.md,build.sh,.gitattributes,.gitignore
 ```
 
 ## Build
 
-`./build.sh` compiles the `.mo` files and creates `.out/email-firewall.zip`, with the plugin in an `email-firewall/` folder at its root. It needs `msgfmt`, `tar` and `zip` on the host. The zip leaves out the development files: `.out/`, `test-env/`, `CLAUDE.md`, `build.sh` and the git files. When you add a development-only file or directory, add it to the exclude list in `build.sh` and to the Plugin Check command above too.
+`./build.sh` compiles the `.mo` files and creates `.out/email-firewall.zip`, with the plugin in an `email-firewall/` folder at its root. The unzipped folder stays in `.out/email-firewall/`. It needs `msgfmt`, `tar` and `zip` on the host. The zip leaves out the development files: `.out/`, `test-env/`, `.wordpress-org/`, `CLAUDE.md`, `build.sh` and the git files (`.github/` included). When you add a development-only file or directory, add it to the exclude list in `build.sh` and to the Plugin Check command above too.
+
+## Release
+
+1. Raise the `Version` header and the `Stable tag`, and add the changelog entry to `readme.txt`.
+2. Commit, then tag the commit with the version (`v1.2.0`) and push the tag.
+
+The tag starts the release workflow. It fails if the tag, the `Version` header and the `Stable tag` differ, or if the changelog has no entry for the version. Then it runs `build.sh`, the PHP 7.4 syntax check and Plugin Check (warnings fail it too) on `.out/email-firewall/`. It deploys that folder to the WordPress.org SVN repository (trunk and the version tag), and creates the GitHub release with the zip and the changelog entry as its notes. If the workflow fails, delete the tag locally and on GitHub, fix the problem, then tag the fixed commit and push the tag again. A re-run is safe: it skips a version that is already on WordPress.org and a GitHub release that already exists.
+
+The WordPress.org deploy only runs once the `SVN_USERNAME` repository variable and the `SVN_PASSWORD` secret (the SVN password from the WordPress.org profile, not the account password) are set in the GitHub repository settings. Banners, icons and screenshots for the plugin page go in `.wordpress-org/`: the deploy copies them to the SVN `assets` directory.

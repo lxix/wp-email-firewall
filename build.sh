@@ -9,16 +9,16 @@ done
 
 # WordPress installs the plugin into the folder at the root of the zip. Without one, it names the
 # folder after the zip file, so a renamed zip would install the plugin in the wrong folder.
-staging=.out/email-firewall
+# The folder stays after the build: the release workflow checks it and deploys it to WordPress.org.
+build_dir=.out/email-firewall
 
 # zip updates an existing archive instead of replacing it, so stale files would stay in it.
-rm -rf "$staging" .out/email-firewall.zip
-mkdir -p "$staging"
+rm -rf "$build_dir" .out/email-firewall.zip
+mkdir -p "$build_dir"
 
 tar -c \
-  --exclude=./.out --exclude=./test-env --exclude=./CLAUDE.md --exclude=./build.sh \
+  --exclude=./.out --exclude=./test-env --exclude=./.wordpress-org --exclude=./CLAUDE.md --exclude=./build.sh \
   --exclude='.git*' --exclude=.claude --exclude=.idea --exclude=node_modules --exclude=.DS_Store \
-  . | tar -x -C "$staging"
+  . | tar -x -C "$build_dir"
 
 (cd .out && zip -rq email-firewall.zip email-firewall)
-rm -rf "$staging"
