@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# WP-CLI inside the test environment, e.g.: test-env/wp plugin list
+set -euo pipefail
+
+cd "$(dirname "$0")"
+
+exec docker compose --progress quiet run --rm -T cli wp "$@"

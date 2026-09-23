@@ -1,0 +1,66 @@
+name: wp-email-firewall
+
+x-wordpress-env: &wordpress-env
+  WORDPRESS_DB_HOST: db
+  WORDPRESS_DB_NAME: wordpress
+  WORDPRESS_DB_USER: wordpress
+  WORDPRESS_DB_PASSWORD: wordpress
+  WORDPRESS_DEBUG: 1
+
+x-wordpress-volumes: &wordpress-volumes
+  - wordpress:/var/www/html
+  - ..:/var/www/html/wp-content/plugins/wp-email-firewall:ro
+  - ./mu-plugins:/var/www/html/wp-content/mu-plugins:ro
+
+services:
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_DATABASE: wordpress
+      MARIADB_USER: wordpress
+      MARIADB_PASSWORD: wordpress
+      MARIADB_ROOT_PASSWORD: root
+    volumes:
+      - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 3s
+      retries: 30
+
+  wordpress:
+    image: wordpress:php8.3-apache
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${WP_PORT:-8080}:80"
+    environment: *wordpress-env
+    volumes: *wordpress-volumes
+    # wp-config.php is written after WordPress has been copied into the volume.
+    healthcheck:
+      test: ["CMD", "test", "-f", "/var/www/html/wp-config.php"]
+      interval: 2s
+      retries: 30
+
+  # Same uid as www-data in the Apache image, so both containers can write the shared files.
+  cli:
+    image: wordpress:cli-php8.3
+    user: "33:33"
+    profiles: [cli]
+    depends_on:
+      wordpress:
+        condition: service_healthy
+    environment:
+      <<: *wordpress-env
+      HOME: /tmp
+    volumes: *wordpress-volumes
+
+  # Every email WordPress sends ends up here: http://localhost:8025
+  mailpit:
+    image: axllent/mailpit
+    ports:
+      - "${MAILPIT_PORT:-8025}:8025"
+
+volumes:
+  db:
+  wordpress:

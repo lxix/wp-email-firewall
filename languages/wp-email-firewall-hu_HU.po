@@ -1,0 +1,126 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: WP Email Firewall 1.1.0\n"
+"PO-Revision-Date: 2026-09-23 20:47+0200\n"
+"Last-Translator: lxix\n"
+"Language-Team: Hungarian\n"
+"Language: hu_HU\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Plugin Name of the plugin
+msgid "WP Email Firewall"
+msgstr "WP Email Firewall"
+
+#. Description of the plugin
+msgid "Suppresses emails sent to blocked email addresses and domains."
+msgstr "Visszatartja a tiltott e-mail-címekre és domainekre küldött leveleket."
+
+msgid "Settings"
+msgstr "Beállítások"
+
+msgid "Log"
+msgstr "Napló"
+
+msgid "Blocked email addresses"
+msgstr "Tiltott e-mail-címek"
+
+msgid "Separate values with commas or new lines."
+msgstr "Az értékeket vesszővel vagy sortöréssel válaszd el."
+
+msgid "Blocked domains"
+msgstr "Tiltott domainek"
+
+msgid "Example: spamdomain.com (its subdomains are blocked too)"
+msgstr "Példa: spamdomain.com (az aldomainjei is tiltva lesznek)"
+
+msgid "Elementor integration"
+msgstr "Elementor-integráció"
+
+msgid "Enable Elementor form blocking"
+msgstr "Tiltás engedélyezése az Elementor-űrlapokon"
+
+msgid "WPForms integration"
+msgstr "WPForms-integráció"
+
+msgid "Enable WPForms form blocking"
+msgstr "Tiltás engedélyezése a WPForms-űrlapokon"
+
+msgid "Blocked form submissions"
+msgstr "Tiltott címről érkező űrlapbeküldések"
+
+msgid "Accept the submission, but send no emails"
+msgstr "A beküldés elfogadása, de e-mail nem megy ki"
+
+msgid "Reject the submission with an error message"
+msgstr "A beküldés elutasítása hibaüzenettel"
+
+msgid "Applies to Elementor and WPForms forms when a field contains a blocked email address."
+msgstr "Elementor- és WPForms-űrlapokra vonatkozik, ha valamelyik mező tiltott e-mail-címet tartalmaz."
+
+msgid "This email address cannot be used."
+msgstr "Ez az e-mail-cím nem használható."
+
+msgid "Log retention (days)"
+msgstr "Napló megőrzési ideje (nap)"
+
+msgid "Save settings"
+msgstr "Beállítások mentése"
+
+#. translators: %s: comma-separated list of the ignored entries
+#, php-format
+msgid "Settings saved, but these entries were invalid and have been ignored: %s"
+msgstr "A beállítások mentve, de ezek a bejegyzések érvénytelenek voltak, ezért kimaradtak: %s"
+
+msgid "Clear log"
+msgstr "Napló törlése"
+
+msgid "Log cleared."
+msgstr "A napló törölve."
+
+msgid "Search"
+msgstr "Keresés"
+
+msgid "Search logs"
+msgstr "Keresés a naplóban"
+
+msgid "Are you sure you want to delete all log entries?"
+msgstr "Biztosan törölni szeretnéd az összes naplóbejegyzést?"
+
+msgid "ID"
+msgstr "Azonosító"
+
+msgid "Date"
+msgstr "Dátum"
+
+msgid "Context"
+msgstr "Forrás"
+
+msgid "Email"
+msgstr "E-mail"
+
+msgid "IP address"
+msgstr "IP-cím"
+
+msgid "No log entries found."
+msgstr "Nincs naplóbejegyzés."
+
+msgid "Administrators"
+msgstr "Adminisztrátorok"
+
+msgid "Also block emails sent to administrators"
+msgstr "Az adminisztrátoroknak küldött e-mailek tiltása is"
+
+msgid "When unchecked, the administration email address and the administrators get their emails even if their address or domain is blocked."
+msgstr "Ha nincs bejelölve, az adminisztrációs e-mail-cím és az adminisztrátorok akkor is megkapják a leveleiket, ha a címük vagy a domainjük tiltott."
+
+msgid "Enable logging"
+msgstr "Naplózás engedélyezése"
+
+msgid "Store blocked email events in the database"
+msgstr "A tiltott e-mailek naplózása az adatbázisba"
+
+msgid "Turning logging off deletes all existing log entries."
+msgstr "A naplózás kikapcsolása az összes meglévő naplóbejegyzést törli."
