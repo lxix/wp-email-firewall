@@ -11,14 +11,14 @@ docker compose up -d --wait
 if ! ./wp core is-installed 2>/dev/null; then
   ./wp core install \
     --url="http://localhost:${WP_PORT:-8080}" \
-    --title="WP Email Firewall" \
+    --title="Email Firewall" \
     --admin_user=admin \
     --admin_password=admin \
     --admin_email=admin@wp-email-firewall.test \
     --skip-email
 fi
 
-./wp plugin activate wp-email-firewall
+./wp plugin activate email-firewall
 
 if [ $# -gt 0 ]; then
   ./wp plugin install "$@" --activate

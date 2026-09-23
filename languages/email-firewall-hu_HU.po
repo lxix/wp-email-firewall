@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: WP Email Firewall 1.1.0\n"
-"PO-Revision-Date: 2026-09-23 20:47+0200\n"
+"Project-Id-Version: Email Firewall 1.1.0\n"
+"PO-Revision-Date: 2026-09-23 22:00+0200\n"
 "Last-Translator: lxix\n"
 "Language-Team: Hungarian\n"
 "Language: hu_HU\n"
@@ -11,8 +11,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #. Plugin Name of the plugin
-msgid "WP Email Firewall"
-msgstr "WP Email Firewall"
+msgid "Email Firewall"
+msgstr "Email Firewall"
 
 #. Description of the plugin
 msgid "Suppresses emails sent to blocked email addresses and domains."
@@ -48,6 +48,18 @@ msgstr "WPForms-integráció"
 msgid "Enable WPForms form blocking"
 msgstr "Tiltás engedélyezése a WPForms-űrlapokon"
 
+msgid "Contact Form 7 integration"
+msgstr "Contact Form 7-integráció"
+
+msgid "Enable Contact Form 7 form blocking"
+msgstr "Tiltás engedélyezése a Contact Form 7-űrlapokon"
+
+msgid "Fluent Forms integration"
+msgstr "Fluent Forms-integráció"
+
+msgid "Enable Fluent Forms form blocking"
+msgstr "Tiltás engedélyezése a Fluent Forms-űrlapokon"
+
 msgid "Blocked form submissions"
 msgstr "Tiltott címről érkező űrlapbeküldések"
 
@@ -57,8 +69,8 @@ msgstr "A beküldés elfogadása, de e-mail nem megy ki"
 msgid "Reject the submission with an error message"
 msgstr "A beküldés elutasítása hibaüzenettel"
 
-msgid "Applies to Elementor and WPForms forms when a field contains a blocked email address."
-msgstr "Elementor- és WPForms-űrlapokra vonatkozik, ha valamelyik mező tiltott e-mail-címet tartalmaz."
+msgid "Applies to the forms of the enabled integrations above when a field contains a blocked email address."
+msgstr "A fenti, bekapcsolt integrációk űrlapjaira vonatkozik, ha valamelyik mező tiltott e-mail-címet tartalmaz."
 
 msgid "This email address cannot be used."
 msgstr "Ez az e-mail-cím nem használható."
@@ -124,3 +136,12 @@ msgstr "A tiltott e-mailek naplózása az adatbázisba"
 
 msgid "Turning logging off deletes all existing log entries."
 msgstr "A naplózás kikapcsolása az összes meglévő naplóbejegyzést törli."
+
+msgid "Email Firewall stores personal data only while logging is turned on in its settings, and it sends no data to external services."
+msgstr "Az Email Firewall csak akkor tárol személyes adatot, ha a beállításaiban be van kapcsolva a naplózás, és semmilyen adatot nem küld külső szolgáltatásnak."
+
+msgid "Suggested text:"
+msgstr "Javasolt szöveg:"
+
+msgid "When this site stops an email to a blocked address, it records the address, the IP address of the request that tried to send the email, the time, and where the email came from (for example, a contact form). These records are deleted automatically after the retention period set by the site administrator."
+msgstr "Ha ez a webhely visszatart egy tiltott címre küldött e-mailt, rögzíti a címet, az e-mailt küldeni próbáló kérés IP-címét, az időpontot és azt, honnan származott az e-mail (például egy kapcsolatfelvételi űrlapról). Ezeket a bejegyzéseket a webhely adminisztrátora által beállított megőrzési idő után automatikusan törli."

@@ -9,7 +9,7 @@ x-wordpress-env: &wordpress-env
 
 x-wordpress-volumes: &wordpress-volumes
   - wordpress:/var/www/html
-  - ..:/var/www/html/wp-content/plugins/wp-email-firewall:ro
+  - ..:/var/www/html/wp-content/plugins/email-firewall:ro
   - ./mu-plugins:/var/www/html/wp-content/mu-plugins:ro
 
 services:

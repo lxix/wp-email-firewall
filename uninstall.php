@@ -14,6 +14,8 @@ $wpef_uninstall_site = static function (): void {
         'wpef_blocked_domains',
         'wpef_enable_elementor',
         'wpef_enable_wpforms',
+        'wpef_enable_contact_form_7',
+        'wpef_enable_fluent_forms',
         'wpef_form_action',
         'wpef_enable_logging',
         'wpef_log_retention',
@@ -30,8 +32,8 @@ $wpef_uninstall_site = static function (): void {
 
     wp_clear_scheduled_hook('wpef_cleanup_logs');
 
-    $table = $wpdb->prefix . 'wpef_log';
-    $wpdb->query("DROP TABLE IF EXISTS {$table}");
+    // phpcs:ignore WordPress.DB.DirectDatabaseQuery -- Removes the plugin's own log table.
+    $wpdb->query("DROP TABLE IF EXISTS {$wpdb->prefix}wpef_log");
 };
 
 if (is_multisite()) {
