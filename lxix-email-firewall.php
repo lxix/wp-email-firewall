@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Plugin Name: Email Firewall
+ * Plugin Name: lxix Email Firewall
  * Plugin URI: https://github.com/lxix/wp-email-firewall
  * Description: Suppresses emails sent to blocked email addresses and domains.
  * Version: 1.1.0
@@ -11,8 +11,7 @@
  * Author URI: https://github.com/lxix
  * License: Apache-2.0
  * License URI: https://www.apache.org/licenses/LICENSE-2.0
- * Text Domain: email-firewall
- * Domain Path: /languages
+ * Text Domain: lxix-email-firewall
  */
 
 declare(strict_types=1);
@@ -72,7 +71,6 @@ final class WPEF_Plugin
         add_action('wpef_cleanup_logs', [$this, 'cleanupLogs']);
         add_filter('wpmu_drop_tables', [$this, 'addLogTableToDroppedTables']);
 
-        add_action('init', [$this, 'loadTextdomain']);
         add_action('admin_menu', [$this, 'registerAdminPage']);
         add_action('admin_init', [$this, 'registerSettings']);
         add_action('admin_init', [$this, 'addPrivacyPolicyContent']);
@@ -96,18 +94,6 @@ final class WPEF_Plugin
         add_action('update_option_wpef_enable_logging', [$this, 'handleLoggingToggle'], 10, 2);
         // On the very first save WordPress adds the option instead of updating it.
         add_action('add_option_wpef_enable_logging', [$this, 'handleLoggingAdded'], 10, 2);
-    }
-
-    public function loadTextdomain(): void
-    {
-        // Loads the translations shipped in languages/. Language packs from translate.wordpress.org
-        // still take precedence over them.
-        // phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound
-        load_plugin_textdomain(
-                'email-firewall',
-                false,
-                dirname(plugin_basename(__FILE__)) . '/languages'
-        );
     }
 
     /* ==========================
@@ -575,7 +561,7 @@ final class WPEF_Plugin
                 'wpef_invalid_entries',
                 esc_html(sprintf(
                         /* translators: %s: comma-separated list of the ignored entries */
-                        __('Settings saved, but these entries were invalid and have been ignored: %s', 'email-firewall'),
+                        __('Settings saved, but these entries were invalid and have been ignored: %s', 'lxix-email-firewall'),
                         implode(', ', array_unique($invalid))
                 )),
                 'warning'
@@ -726,14 +712,14 @@ final class WPEF_Plugin
     public function addPrivacyPolicyContent(): void
     {
         $content = '<p class="privacy-policy-tutorial">'
-                . esc_html__('Email Firewall stores personal data only while logging is turned on in its settings, and it sends no data to external services.', 'email-firewall')
+                . esc_html__('lxix Email Firewall stores personal data only while logging is turned on in its settings, and it sends no data to external services.', 'lxix-email-firewall')
                 . '</p><p><strong class="privacy-policy-tutorial">'
-                . esc_html__('Suggested text:', 'email-firewall')
+                . esc_html__('Suggested text:', 'lxix-email-firewall')
                 . '</strong> '
-                . esc_html__('When this site stops an email to a blocked address, it records the address, the IP address of the request that tried to send the email, the time, and where the email came from (for example, a contact form). These records are deleted automatically after the retention period set by the site administrator.', 'email-firewall')
+                . esc_html__('When this site stops an email to a blocked address, it records the address, the IP address of the request that tried to send the email, the time, and where the email came from (for example, a contact form). These records are deleted automatically after the retention period set by the site administrator.', 'lxix-email-firewall')
                 . '</p>';
 
-        wp_add_privacy_policy_content(__('Email Firewall', 'email-firewall'), $content);
+        wp_add_privacy_policy_content(__('lxix Email Firewall', 'lxix-email-firewall'), $content);
     }
 
     /* ==========================
@@ -743,10 +729,10 @@ final class WPEF_Plugin
     public function registerAdminPage(): void
     {
         add_options_page(
-                __('Email Firewall', 'email-firewall'),
-                __('Email Firewall', 'email-firewall'),
+                __('lxix Email Firewall', 'lxix-email-firewall'),
+                __('lxix Email Firewall', 'lxix-email-firewall'),
                 'manage_options',
-                'email-firewall',
+                'lxix-email-firewall',
                 [$this, 'adminPage']
         );
     }
@@ -755,8 +741,8 @@ final class WPEF_Plugin
     {
         $links[] = sprintf(
                 '<a href="%s">%s</a>',
-                esc_url(admin_url('options-general.php?page=email-firewall')),
-                esc_html__('Settings', 'email-firewall')
+                esc_url(admin_url('options-general.php?page=lxix-email-firewall')),
+                esc_html__('Settings', 'lxix-email-firewall')
         );
 
         return $links;
@@ -778,18 +764,18 @@ final class WPEF_Plugin
 
         ?>
         <div class="wrap">
-            <h1><?php echo esc_html__('Email Firewall', 'email-firewall'); ?></h1>
+            <h1><?php echo esc_html__('lxix Email Firewall', 'lxix-email-firewall'); ?></h1>
 
             <h2 class="nav-tab-wrapper">
                 <a class="nav-tab <?php echo $tab === 'settings' ? 'nav-tab-active' : ''; ?>"
-                   href="<?php echo esc_url(admin_url('options-general.php?page=email-firewall&tab=settings')); ?>">
-                    <?php echo esc_html__('Settings', 'email-firewall'); ?>
+                   href="<?php echo esc_url(admin_url('options-general.php?page=lxix-email-firewall&tab=settings')); ?>">
+                    <?php echo esc_html__('Settings', 'lxix-email-firewall'); ?>
                 </a>
 
                 <?php if ($loggingEnabled) : ?>
                     <a class="nav-tab <?php echo $tab === 'log' ? 'nav-tab-active' : ''; ?>"
-                       href="<?php echo esc_url(admin_url('options-general.php?page=email-firewall&tab=log')); ?>">
-                        <?php echo esc_html__('Log', 'email-firewall'); ?>
+                       href="<?php echo esc_url(admin_url('options-general.php?page=lxix-email-firewall&tab=log')); ?>">
+                        <?php echo esc_html__('Log', 'lxix-email-firewall'); ?>
                     </a>
                 <?php endif; ?>
             </h2>
@@ -812,52 +798,52 @@ final class WPEF_Plugin
             <?php settings_fields('wpef_settings'); ?>
             <table class="form-table" role="presentation">
                 <tr>
-                    <th scope="row"><?php echo esc_html__('Blocked email addresses', 'email-firewall'); ?></th>
+                    <th scope="row"><?php echo esc_html__('Blocked email addresses', 'lxix-email-firewall'); ?></th>
                     <td>
                         <textarea name="wpef_blocked_emails" rows="6" class="large-text code"><?php echo esc_textarea((string) get_option('wpef_blocked_emails', '')); ?></textarea>
-                        <p class="description"><?php echo esc_html__('Separate values with commas or new lines.', 'email-firewall'); ?></p>
+                        <p class="description"><?php echo esc_html__('Separate values with commas or new lines.', 'lxix-email-firewall'); ?></p>
                     </td>
                 </tr>
 
                 <tr>
-                    <th scope="row"><?php echo esc_html__('Blocked domains', 'email-firewall'); ?></th>
+                    <th scope="row"><?php echo esc_html__('Blocked domains', 'lxix-email-firewall'); ?></th>
                     <td>
                         <textarea name="wpef_blocked_domains" rows="6" class="large-text code"><?php echo esc_textarea((string) get_option('wpef_blocked_domains', '')); ?></textarea>
-                        <p class="description"><?php echo esc_html__('Example: spamdomain.com (its subdomains are blocked too)', 'email-firewall'); ?></p>
+                        <p class="description"><?php echo esc_html__('Example: spamdomain.com (its subdomains are blocked too)', 'lxix-email-firewall'); ?></p>
                     </td>
                 </tr>
 
                 <tr>
-                    <th scope="row"><?php echo esc_html__('Administrators', 'email-firewall'); ?></th>
+                    <th scope="row"><?php echo esc_html__('Administrators', 'lxix-email-firewall'); ?></th>
                     <td>
                         <label>
                             <input type="checkbox"
                                    name="wpef_block_admin_emails"
                                    value="1"
                                     <?php checked($this->shouldBlockAdminEmails(), true); ?>>
-                            <?php echo esc_html__('Also block emails sent to administrators', 'email-firewall'); ?>
+                            <?php echo esc_html__('Also block emails sent to administrators', 'lxix-email-firewall'); ?>
                         </label>
-                        <p class="description"><?php echo esc_html__('When unchecked, the administration email address and the administrators get their emails even if their address or domain is blocked.', 'email-firewall'); ?></p>
+                        <p class="description"><?php echo esc_html__('When unchecked, the administration email address and the administrators get their emails even if their address or domain is blocked.', 'lxix-email-firewall'); ?></p>
                     </td>
                 </tr>
 
                 <tr>
-                    <th scope="row"><?php echo esc_html__('Enable logging', 'email-firewall'); ?></th>
+                    <th scope="row"><?php echo esc_html__('Enable logging', 'lxix-email-firewall'); ?></th>
                     <td>
                         <label>
                             <input type="checkbox"
                                    name="wpef_enable_logging"
                                    value="1"
                                     <?php checked($this->isLoggingEnabled(), true); ?>>
-                            <?php echo esc_html__('Store blocked email events in the database', 'email-firewall'); ?>
+                            <?php echo esc_html__('Store blocked email events in the database', 'lxix-email-firewall'); ?>
                         </label>
-                        <p class="description"><?php echo esc_html__('Turning logging off deletes all existing log entries.', 'email-firewall'); ?></p>
+                        <p class="description"><?php echo esc_html__('Turning logging off deletes all existing log entries.', 'lxix-email-firewall'); ?></p>
                     </td>
                 </tr>
 
                 <?php if ($this->isLoggingEnabled()) : ?>
                     <tr>
-                        <th scope="row"><?php echo esc_html__('Log retention (days)', 'email-firewall'); ?></th>
+                        <th scope="row"><?php echo esc_html__('Log retention (days)', 'lxix-email-firewall'); ?></th>
                         <td>
                             <input type="number"
                                    min="1"
@@ -868,62 +854,62 @@ final class WPEF_Plugin
                 <?php endif; ?>
 
                 <tr>
-                    <th scope="row"><?php echo esc_html__('Elementor integration', 'email-firewall'); ?></th>
+                    <th scope="row"><?php echo esc_html__('Elementor integration', 'lxix-email-firewall'); ?></th>
                     <td>
                         <label>
                             <input type="checkbox" name="wpef_enable_elementor" value="1" <?php checked($this->isElementorEnabled(), true); ?>>
-                            <?php echo esc_html__('Enable Elementor form blocking', 'email-firewall'); ?>
+                            <?php echo esc_html__('Enable Elementor form blocking', 'lxix-email-firewall'); ?>
                         </label>
                     </td>
                 </tr>
 
                 <tr>
-                    <th scope="row"><?php echo esc_html__('WPForms integration', 'email-firewall'); ?></th>
+                    <th scope="row"><?php echo esc_html__('WPForms integration', 'lxix-email-firewall'); ?></th>
                     <td>
                         <label>
                             <input type="checkbox" name="wpef_enable_wpforms" value="1" <?php checked($this->isWpFormsEnabled(), true); ?>>
-                            <?php echo esc_html__('Enable WPForms form blocking', 'email-firewall'); ?>
+                            <?php echo esc_html__('Enable WPForms form blocking', 'lxix-email-firewall'); ?>
                         </label>
                     </td>
                 </tr>
 
                 <tr>
-                    <th scope="row"><?php echo esc_html__('Contact Form 7 integration', 'email-firewall'); ?></th>
+                    <th scope="row"><?php echo esc_html__('Contact Form 7 integration', 'lxix-email-firewall'); ?></th>
                     <td>
                         <label>
                             <input type="checkbox" name="wpef_enable_contact_form_7" value="1" <?php checked($this->isContactForm7Enabled(), true); ?>>
-                            <?php echo esc_html__('Enable Contact Form 7 form blocking', 'email-firewall'); ?>
+                            <?php echo esc_html__('Enable Contact Form 7 form blocking', 'lxix-email-firewall'); ?>
                         </label>
                     </td>
                 </tr>
 
                 <tr>
-                    <th scope="row"><?php echo esc_html__('Fluent Forms integration', 'email-firewall'); ?></th>
+                    <th scope="row"><?php echo esc_html__('Fluent Forms integration', 'lxix-email-firewall'); ?></th>
                     <td>
                         <label>
                             <input type="checkbox" name="wpef_enable_fluent_forms" value="1" <?php checked($this->isFluentFormsEnabled(), true); ?>>
-                            <?php echo esc_html__('Enable Fluent Forms form blocking', 'email-firewall'); ?>
+                            <?php echo esc_html__('Enable Fluent Forms form blocking', 'lxix-email-firewall'); ?>
                         </label>
                     </td>
                 </tr>
 
                 <tr>
-                    <th scope="row"><label for="wpef-form-action"><?php echo esc_html__('Blocked form submissions', 'email-firewall'); ?></label></th>
+                    <th scope="row"><label for="wpef-form-action"><?php echo esc_html__('Blocked form submissions', 'lxix-email-firewall'); ?></label></th>
                     <td>
                         <select id="wpef-form-action" name="wpef_form_action">
                             <option value="silent" <?php selected($this->getFormAction(), 'silent'); ?>>
-                                <?php echo esc_html__('Accept the submission, but send no emails', 'email-firewall'); ?>
+                                <?php echo esc_html__('Accept the submission, but send no emails', 'lxix-email-firewall'); ?>
                             </option>
                             <option value="reject" <?php selected($this->getFormAction(), 'reject'); ?>>
-                                <?php echo esc_html__('Reject the submission with an error message', 'email-firewall'); ?>
+                                <?php echo esc_html__('Reject the submission with an error message', 'lxix-email-firewall'); ?>
                             </option>
                         </select>
-                        <p class="description"><?php echo esc_html__('Applies to the forms of the enabled integrations above when a field contains a blocked email address.', 'email-firewall'); ?></p>
+                        <p class="description"><?php echo esc_html__('Applies to the forms of the enabled integrations above when a field contains a blocked email address.', 'lxix-email-firewall'); ?></p>
                     </td>
                 </tr>
             </table>
 
-            <?php submit_button(__('Save settings', 'email-firewall')); ?>
+            <?php submit_button(__('Save settings', 'lxix-email-firewall')); ?>
         </form>
         <?php
     }
@@ -934,7 +920,7 @@ final class WPEF_Plugin
 
         if (isset($_POST['wpef_clear_log']) && check_admin_referer('wpef_clear_log')) {
             $this->clearLog();
-            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Log cleared.', 'email-firewall') . '</p></div>';
+            echo '<div class="notice notice-success is-dismissible"><p>' . esc_html__('Log cleared.', 'lxix-email-firewall') . '</p></div>';
         }
 
         $paged = isset($_GET['paged']) ? max(1, (int) $_GET['paged']) : 1;
@@ -976,18 +962,18 @@ final class WPEF_Plugin
 
         $totalPages = (int) ceil($total / self::PER_PAGE);
 
-        $baseUrl = admin_url('options-general.php?page=email-firewall&tab=log');
+        $baseUrl = admin_url('options-general.php?page=lxix-email-firewall&tab=log');
         if ($search !== '') {
             $baseUrl = add_query_arg('s', rawurlencode($search), $baseUrl);
         }
         ?>
         <form method="get">
-            <input type="hidden" name="page" value="email-firewall">
+            <input type="hidden" name="page" value="lxix-email-firewall">
             <input type="hidden" name="tab" value="log">
             <p class="search-box">
-                <label class="screen-reader-text" for="wpef-search"><?php echo esc_html__('Search logs', 'email-firewall'); ?></label>
+                <label class="screen-reader-text" for="wpef-search"><?php echo esc_html__('Search logs', 'lxix-email-firewall'); ?></label>
                 <input id="wpef-search" type="search" name="s" value="<?php echo esc_attr($search); ?>">
-                <input type="submit" class="button" value="<?php echo esc_attr__('Search', 'email-firewall'); ?>">
+                <input type="submit" class="button" value="<?php echo esc_attr__('Search', 'lxix-email-firewall'); ?>">
             </p>
         </form>
 
@@ -998,9 +984,9 @@ final class WPEF_Plugin
                         type="submit"
                         name="wpef_clear_log"
                         class="button"
-                        onclick="return confirm('<?php echo esc_js(__('Are you sure you want to delete all log entries?', 'email-firewall')); ?>')"
+                        onclick="return confirm('<?php echo esc_js(__('Are you sure you want to delete all log entries?', 'lxix-email-firewall')); ?>')"
                 >
-                    <?php echo esc_html__('Clear log', 'email-firewall'); ?>
+                    <?php echo esc_html__('Clear log', 'lxix-email-firewall'); ?>
                 </button>
             </p>
         </form>
@@ -1008,17 +994,17 @@ final class WPEF_Plugin
         <table class="widefat striped">
             <thead>
             <tr>
-                <th><?php echo esc_html__('ID', 'email-firewall'); ?></th>
-                <th><?php echo esc_html__('Date', 'email-firewall'); ?></th>
-                <th><?php echo esc_html__('Context', 'email-firewall'); ?></th>
-                <th><?php echo esc_html__('Email', 'email-firewall'); ?></th>
-                <th><?php echo esc_html__('IP address', 'email-firewall'); ?></th>
+                <th><?php echo esc_html__('ID', 'lxix-email-firewall'); ?></th>
+                <th><?php echo esc_html__('Date', 'lxix-email-firewall'); ?></th>
+                <th><?php echo esc_html__('Context', 'lxix-email-firewall'); ?></th>
+                <th><?php echo esc_html__('Email', 'lxix-email-firewall'); ?></th>
+                <th><?php echo esc_html__('IP address', 'lxix-email-firewall'); ?></th>
             </tr>
             </thead>
             <tbody>
             <?php if (empty($logs)) : ?>
                 <tr>
-                    <td colspan="5"><?php echo esc_html__('No log entries found.', 'email-firewall'); ?></td>
+                    <td colspan="5"><?php echo esc_html__('No log entries found.', 'lxix-email-firewall'); ?></td>
                 </tr>
             <?php else : ?>
                 <?php foreach ($logs as $log) : ?>
@@ -1355,7 +1341,7 @@ final class WPEF_Plugin
 
     private function getRejectMessage(): string
     {
-        return __('This email address cannot be used.', 'email-firewall');
+        return __('This email address cannot be used.', 'lxix-email-firewall');
     }
 
     public function endFormSubmission(): void

@@ -11,14 +11,16 @@ docker compose up -d --wait
 if ! ./wp core is-installed 2>/dev/null; then
   ./wp core install \
     --url="http://localhost:${WP_PORT:-8080}" \
-    --title="Email Firewall" \
+    --title="lxix Email Firewall" \
     --admin_user=admin \
     --admin_password=admin \
     --admin_email=admin@wp-email-firewall.test \
     --skip-email
 fi
 
-./wp plugin activate email-firewall
+./wp plugin activate lxix-email-firewall
+# The plugin doesn't ship its translations: they are compiled to where WordPress looks for language packs.
+./wp i18n make-mo wp-content/plugins/lxix-email-firewall/languages wp-content/languages/plugins
 
 if [ $# -gt 0 ]; then
   ./wp plugin install "$@" --activate

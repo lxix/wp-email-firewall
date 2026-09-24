@@ -18,8 +18,8 @@ jobs:
           fail() { echo "::error::$1"; exit 1; }
           version="${GITHUB_REF_NAME#v}"
 
-          grep -qxF " * Version: $version" email-firewall.php \
-            || fail "The Version header in email-firewall.php is not $version."
+          grep -qxF " * Version: $version" lxix-email-firewall.php \
+            || fail "The Version header in lxix-email-firewall.php is not $version."
           grep -qxF "Stable tag: $version" readme.txt \
             || fail "The Stable tag in readme.txt is not $version."
 
@@ -31,20 +31,17 @@ jobs:
           echo "VERSION=$version" >> "$GITHUB_ENV"
 
       - name: Build
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gettext
-          ./build.sh
+        run: ./build.sh
 
       - name: Check the syntax on PHP 7.4
         run: |
-          docker run --rm -v "$PWD/.out/email-firewall":/app:ro -w /app php:7.4-cli \
+          docker run --rm -v "$PWD/.out/lxix-email-firewall":/app:ro -w /app php:7.4-cli \
             sh -c "find . -name '*.php' -print0 | xargs -0 -n1 php -l"
 
       - name: Plugin Check
         uses: WordPress/plugin-check-action@10857da14b6c2246d15402b3e69f777edcf8c12e # v1.1.9
         with:
-          build-dir: .out/email-firewall
+          build-dir: .out/lxix-email-firewall
           # Warnings fail the release too: Plugin Check has to stay clean.
           strict: true
 
@@ -58,8 +55,8 @@ jobs:
           SVN_USERNAME: ${{ vars.SVN_USERNAME }}
           SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
           # The slug defaults to the repository name, which kept the old wp-email-firewall name.
-          SLUG: email-firewall
-          BUILD_DIR: .out/email-firewall
+          SLUG: lxix-email-firewall
+          BUILD_DIR: .out/lxix-email-firewall
 
       - name: Create the GitHub release
         env:
@@ -70,5 +67,5 @@ jobs:
             echo "The GitHub release $GITHUB_REF_NAME already exists."
             exit 0
           fi
-          gh release create "$GITHUB_REF_NAME" .out/email-firewall.zip --verify-tag \
-            --title "Email Firewall $VERSION" --notes-file "$RUNNER_TEMP/release-notes.md"
+          gh release create "$GITHUB_REF_NAME" .out/lxix-email-firewall.zip --verify-tag \
+            --title "lxix Email Firewall $VERSION" --notes-file "$RUNNER_TEMP/release-notes.md"

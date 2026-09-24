@@ -1,4 +1,4 @@
-=== Email Firewall ===
+=== lxix Email Firewall ===
 Contributors: lxix
 Tags: email, blocklist, spam, contact form, woocommerce
 Requires at least: 6.0
@@ -12,7 +12,7 @@ Stops emails to blocked addresses and domains: checks every wp_mail() call, form
 
 == Description ==
 
-Email Firewall keeps your site from sending emails to the addresses and domains you block. Use it to stop mail to fake addresses left in your forms by bots, to spam traps, or to recipients who must not get any more emails from the site.
+lxix Email Firewall keeps your site from sending emails to the addresses and domains you block. Use it to stop mail to fake addresses left in your forms by bots, to spam traps, or to recipients who must not get any more emails from the site.
 
 = How it works =
 
@@ -22,7 +22,7 @@ Email Firewall keeps your site from sending emails to the addresses and domains 
 
 = Form integrations =
 
-When a form submission contains a blocked email address, Email Firewall either accepts the submission but sends no emails for it, or rejects it with an error message. Supported form plugins:
+When a form submission contains a blocked email address, lxix Email Firewall either accepts the submission but sends no emails for it, or rejects it with an error message. Supported form plugins:
 
 * Elementor Pro forms
 * WPForms
@@ -41,13 +41,13 @@ Blocked emails can be logged with the address, the time, the source (for example
 
 = Privacy =
 
-Email Firewall doesn't contact any external service. While logging is on, it stores the blocked email addresses and the IP addresses of the requests that tried to email them in a database table of your site. It adds a suggested text for your privacy policy to the Privacy Policy Guide (Settings > Privacy).
+lxix Email Firewall doesn't contact any external service. While logging is on, it stores the blocked email addresses and the IP addresses of the requests that tried to email them in a database table of your site. It adds a suggested text for your privacy policy to the Privacy Policy Guide (Settings > Privacy).
 
 == Installation ==
 
-1. Install the plugin from Plugins > Add New Plugin, or upload the `email-firewall` folder to `/wp-content/plugins/`.
+1. Install the plugin from Plugins > Add New Plugin, or upload the `lxix-email-firewall` folder to `/wp-content/plugins/`.
 2. Activate the plugin.
-3. Go to Settings > Email Firewall and enter the email addresses and domains to block.
+3. Go to Settings > lxix Email Firewall and enter the email addresses and domains to block.
 
 == Frequently Asked Questions ==
 
@@ -76,7 +76,8 @@ Its settings, its log table and its scheduled cleanup task, on every site of a m
 = 1.1.0 =
 * New: Contact Form 7 and Fluent Forms integrations.
 * New: suggested privacy policy text.
-* The plugin is now called Email Firewall. Its folder and text domain are `email-firewall`.
+* The plugin is now called lxix Email Firewall. Its folder and text domain are `lxix-email-firewall`.
+* Translations are no longer bundled with the plugin: they come from translate.wordpress.org.
 * The log stores times in UTC and shows them in the site's timezone. Existing entries are converted on update.
 * WooCommerce emails are always checked. The separate WooCommerce setting has been removed.
 * Clearing the log works on hosts that don't grant the database DROP privilege.
