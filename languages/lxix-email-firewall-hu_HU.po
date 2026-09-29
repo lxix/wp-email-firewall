@@ -14,9 +14,21 @@ msgstr ""
 msgid "lxix Email Firewall"
 msgstr "lxix Email Firewall"
 
+#. Plugin URI of the plugin
+msgid "https://github.com/lxix/wp-email-firewall"
+msgstr "https://github.com/lxix/wp-email-firewall"
+
 #. Description of the plugin
 msgid "Suppresses emails sent to blocked email addresses and domains."
 msgstr "Visszatartja a tiltott e-mail-címekre és domainekre küldött leveleket."
+
+#. Author of the plugin
+msgid "lxix"
+msgstr "lxix"
+
+#. Author URI of the plugin
+msgid "https://github.com/lxix"
+msgstr "https://github.com/lxix"
 
 msgid "Settings"
 msgstr "Beállítások"
