@@ -4,4 +4,5 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
-exec docker compose --progress quiet run --rm -T cli wp "$@"
+# PHP's default 128M is too little for WP-CLI to load WooCommerce together with a few more plugins.
+exec docker compose --progress quiet run --rm -T cli php -d memory_limit=512M /usr/local/bin/wp "$@"

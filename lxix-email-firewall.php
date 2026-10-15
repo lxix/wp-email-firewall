@@ -4,7 +4,7 @@
  * Plugin Name: lxix Email Firewall
  * Plugin URI: https://github.com/lxix/wp-email-firewall
  * Description: Suppresses emails sent to blocked email addresses and domains.
- * Version: 1.1.0
+ * Version: 1.2.0
  * Requires at least: 6.0
  * Requires PHP: 7.4
  * Author: lxix
@@ -36,6 +36,12 @@ final class WPEF_Plugin
      */
     private const SUPPRESSED_KEY = 'wpef_suppressed';
 
+    /**
+     * Fluent Forms entry meta: the entry's blocked address has been logged. Its notifications may be
+     * sent in later requests (after a payment, from the async queue), which must not log it again.
+     */
+    private const FLUENT_FORMS_LOGGED_META = 'wpef_logged';
+
     private static ?self $instance = null;
 
     /**
@@ -43,6 +49,12 @@ final class WPEF_Plugin
      * every email sent during that submission is suppressed.
      */
     private bool $suppressRequestMail = false;
+
+    /** Set while a Fluent Forms notification of a blocked entry is suppressed outside its submission. */
+    private bool $suppressingFluentFormsNotification = false;
+
+    /** @var string[] The REST routes (prefixes) whose request ends a form submission. */
+    private array $restSubmissionRoutes = [];
 
     /** @var array<string, array{0: string, 1: string[]}> */
     private array $listCache = [];
@@ -84,6 +96,11 @@ final class WPEF_Plugin
         add_action('plugins_loaded', [$this, 'maybeInitWpForms'], 20);
         add_action('plugins_loaded', [$this, 'maybeInitContactForm7'], 20);
         add_action('plugins_loaded', [$this, 'maybeInitFluentForms'], 20);
+        add_action('plugins_loaded', [$this, 'maybeInitForminator'], 20);
+        add_action('plugins_loaded', [$this, 'maybeInitMetForm'], 20);
+        add_action('plugins_loaded', [$this, 'maybeInitNinjaForms'], 20);
+        add_action('plugins_loaded', [$this, 'maybeInitSureForms'], 20);
+        add_action('plugins_loaded', [$this, 'maybeInitFormidable'], 20);
         add_filter('woocommerce_email_classes', [$this, 'registerWooCommerceFilters'], PHP_INT_MAX);
 
         add_filter(
@@ -351,6 +368,31 @@ final class WPEF_Plugin
                 'default' => 1,
         ]);
 
+        register_setting('wpef_settings', 'wpef_enable_forminator', [
+                'sanitize_callback' => 'intval',
+                'default' => 1,
+        ]);
+
+        register_setting('wpef_settings', 'wpef_enable_metform', [
+                'sanitize_callback' => 'intval',
+                'default' => 1,
+        ]);
+
+        register_setting('wpef_settings', 'wpef_enable_ninja_forms', [
+                'sanitize_callback' => 'intval',
+                'default' => 1,
+        ]);
+
+        register_setting('wpef_settings', 'wpef_enable_sureforms', [
+                'sanitize_callback' => 'intval',
+                'default' => 1,
+        ]);
+
+        register_setting('wpef_settings', 'wpef_enable_formidable', [
+                'sanitize_callback' => 'intval',
+                'default' => 1,
+        ]);
+
         register_setting('wpef_settings', 'wpef_form_action', [
                 'sanitize_callback' => [$this, 'sanitizeFormAction'],
                 'default' => 'silent',
@@ -396,6 +438,31 @@ final class WPEF_Plugin
     public function isFluentFormsEnabled(): bool
     {
         return (int) get_option('wpef_enable_fluent_forms', 1) === 1;
+    }
+
+    public function isForminatorEnabled(): bool
+    {
+        return (int) get_option('wpef_enable_forminator', 1) === 1;
+    }
+
+    public function isMetFormEnabled(): bool
+    {
+        return (int) get_option('wpef_enable_metform', 1) === 1;
+    }
+
+    public function isNinjaFormsEnabled(): bool
+    {
+        return (int) get_option('wpef_enable_ninja_forms', 1) === 1;
+    }
+
+    public function isSureFormsEnabled(): bool
+    {
+        return (int) get_option('wpef_enable_sureforms', 1) === 1;
+    }
+
+    public function isFormidableEnabled(): bool
+    {
+        return (int) get_option('wpef_enable_formidable', 1) === 1;
     }
 
     public function shouldBlockAdminEmails(): bool
@@ -894,6 +961,56 @@ final class WPEF_Plugin
                 </tr>
 
                 <tr>
+                    <th scope="row"><?php echo esc_html__('Forminator integration', 'lxix-email-firewall'); ?></th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="wpef_enable_forminator" value="1" <?php checked($this->isForminatorEnabled(), true); ?>>
+                            <?php echo esc_html__('Enable Forminator form blocking', 'lxix-email-firewall'); ?>
+                        </label>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th scope="row"><?php echo esc_html__('MetForm integration', 'lxix-email-firewall'); ?></th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="wpef_enable_metform" value="1" <?php checked($this->isMetFormEnabled(), true); ?>>
+                            <?php echo esc_html__('Enable MetForm form blocking', 'lxix-email-firewall'); ?>
+                        </label>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th scope="row"><?php echo esc_html__('Ninja Forms integration', 'lxix-email-firewall'); ?></th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="wpef_enable_ninja_forms" value="1" <?php checked($this->isNinjaFormsEnabled(), true); ?>>
+                            <?php echo esc_html__('Enable Ninja Forms form blocking', 'lxix-email-firewall'); ?>
+                        </label>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th scope="row"><?php echo esc_html__('SureForms integration', 'lxix-email-firewall'); ?></th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="wpef_enable_sureforms" value="1" <?php checked($this->isSureFormsEnabled(), true); ?>>
+                            <?php echo esc_html__('Enable SureForms form blocking', 'lxix-email-firewall'); ?>
+                        </label>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th scope="row"><?php echo esc_html__('Formidable Forms integration', 'lxix-email-firewall'); ?></th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="wpef_enable_formidable" value="1" <?php checked($this->isFormidableEnabled(), true); ?>>
+                            <?php echo esc_html__('Enable Formidable Forms form blocking', 'lxix-email-firewall'); ?>
+                        </label>
+                    </td>
+                </tr>
+
+                <tr>
                     <th scope="row"><label for="wpef-form-action"><?php echo esc_html__('Blocked form submissions', 'lxix-email-firewall'); ?></label></th>
                     <td>
                         <select id="wpef-form-action" name="wpef_form_action">
@@ -1349,6 +1466,41 @@ final class WPEF_Plugin
         $this->suppressRequestMail = false;
     }
 
+    /**
+     * For form plugins that submit to a REST route of their own, and have no hook at the end of every submission.
+     */
+    private function endFormSubmissionWithRestRoute(string $routePrefix): void
+    {
+        if ($this->restSubmissionRoutes === []) {
+            add_filter('rest_request_after_callbacks', [$this, 'endRestFormSubmission'], PHP_INT_MAX, 3);
+        }
+
+        $this->restSubmissionRoutes[] = $routePrefix;
+    }
+
+    /**
+     * @param mixed $response
+     * @param mixed $handler
+     * @param mixed $request
+     * @return mixed
+     */
+    public function endRestFormSubmission($response, $handler = null, $request = null)
+    {
+        if (!$request instanceof WP_REST_Request) {
+            return $response;
+        }
+
+        // A REST request made inside another form plugin's submission must not end its suppression.
+        foreach ($this->restSubmissionRoutes as $routePrefix) {
+            if (strpos($request->get_route(), $routePrefix) === 0) {
+                $this->endFormSubmission();
+                break;
+            }
+        }
+
+        return $response;
+    }
+
     /* ==========================
      * Elementor
      * ========================== */
@@ -1543,6 +1695,17 @@ final class WPEF_Plugin
         // own (AJAX or REST), so one that stops early (spam, errors) ends the request anyway.
         add_filter('fluentform/validation_errors', [$this, 'filterFluentFormsValidationErrors'], 10, 2);
         add_action('fluentform/before_submission_confirmation', [$this, 'endFormSubmission'], PHP_INT_MAX);
+        // Fired right after the entry is saved, on every way of submitting, before any notification is sent or
+        // queued. A payment form submitted to a hosted checkout ends its request before the later form actions.
+        add_action('fluentform/notify_on_form_submit', [$this, 'markLoggedFluentFormsEntry']);
+        // Fluent Forms sends the notifications from this action (at priority 10), with the entry's stored
+        // values, also outside the submission request: after a payment, or from its async queue. (The
+        // "on submit" notifications of payment forms skip it, but they are sent during the submission.)
+        add_action('fluentform/integration_notify_notifications', [$this, 'beginFluentFormsNotification'], 9, 3);
+        add_action('fluentform/integration_notify_notifications', [$this, 'endFluentFormsNotification'], PHP_INT_MAX);
+        // When a notification throws, the action above stops before the suppression ends. Action Scheduler
+        // catches the exception and runs the next action of the batch, whose emails must not be suppressed.
+        add_action('action_scheduler_failed_execution', [$this, 'endFluentFormsNotification']);
     }
 
     /**
@@ -1569,6 +1732,515 @@ final class WPEF_Plugin
         $this->suppressRequestMail = true;
 
         return $errors;
+    }
+
+    /**
+     * @param mixed $feed
+     * @param mixed $formData The entry's stored values by field name.
+     * @param mixed $entry
+     */
+    public function beginFluentFormsNotification($feed, $formData, $entry = null): void
+    {
+        // During the submission, the validation has already decided and logged it.
+        if ($this->suppressRequestMail || !is_array($formData)) {
+            return;
+        }
+
+        $blocked = $this->findBlockedValue($formData);
+        if ($blocked === null) {
+            return;
+        }
+
+        // An entry is logged once, like a submission: by its validation, or by its first suppressed notification
+        // when the address was blocked after the submission.
+        $entryId = is_object($entry) ? (int) ($entry->id ?? 0) : 0;
+        if (!$this->isFluentFormsEntryLogged($entryId)) {
+            $this->logBlock('fluent_forms', $blocked[1]);
+            $this->setFluentFormsEntryLogged($entryId);
+        }
+
+        $this->suppressRequestMail = true;
+        $this->suppressingFluentFormsNotification = true;
+    }
+
+    /**
+     * @param mixed $entryId
+     */
+    public function markLoggedFluentFormsEntry($entryId): void
+    {
+        // Only the validation of this submission sets the flag before the entry is saved, and it has logged the entry.
+        if ($this->suppressRequestMail) {
+            $this->setFluentFormsEntryLogged((int) $entryId);
+        }
+    }
+
+    private function isFluentFormsEntryLogged(int $entryId): bool
+    {
+        if ($entryId <= 0 || !class_exists('\FluentForm\App\Helpers\Helper')) {
+            return false;
+        }
+
+        return (bool) \FluentForm\App\Helpers\Helper::getSubmissionMeta($entryId, self::FLUENT_FORMS_LOGGED_META);
+    }
+
+    private function setFluentFormsEntryLogged(int $entryId): void
+    {
+        if ($entryId > 0 && class_exists('\FluentForm\App\Helpers\Helper')) {
+            \FluentForm\App\Helpers\Helper::setSubmissionMeta($entryId, self::FLUENT_FORMS_LOGGED_META, 1);
+        }
+    }
+
+    /**
+     * Only ends a suppression begun by beginFluentFormsNotification(): during the submission, the flag stays
+     * set until before_submission_confirmation, and in an Action Scheduler batch it must not reach the next action.
+     */
+    public function endFluentFormsNotification(): void
+    {
+        if (!$this->suppressingFluentFormsNotification) {
+            return;
+        }
+
+        $this->suppressingFluentFormsNotification = false;
+        $this->suppressRequestMail = false;
+    }
+
+    /* ==========================
+     * Forminator
+     * ========================== */
+
+    public function maybeInitForminator(): void
+    {
+        if (!$this->isForminatorEnabled()) {
+            return;
+        }
+
+        // Forminator applies this filter after its field validation, before the captcha and spam checks, the entry
+        // and the emails.
+        add_filter('forminator_custom_form_submit_errors', [$this, 'filterForminatorSubmitErrors'], 10, 3);
+        // The first one ends an AJAX submission, the second one a submission without AJAX.
+        add_action('forminator_form_after_save_entry', [$this, 'endFormSubmission']);
+        add_action('forminator_form_after_handle_submit', [$this, 'endFormSubmission']);
+        // Every notification of an entry passes here, also outside the submission: after a Stripe Checkout payment
+        // (its return, its webhook or a scheduled check), or when an administrator resends it.
+        add_filter('forminator_form_get_admin_email_recipients', [$this, 'filterForminatorNotificationRecipients'], PHP_INT_MAX, 5);
+    }
+
+    /**
+     * @param mixed $errors    A list of [field ID => message] arrays.
+     * @param mixed $formId
+     * @param mixed $fieldData The submitted fields: ['name' => field ID, 'value' => value, ...].
+     * @return mixed
+     */
+    public function filterForminatorSubmitErrors($errors, $formId = null, $fieldData = null)
+    {
+        // Forminator applies the filter again after each pass over the uploaded files. A saved draft sends no
+        // email, and its final submission is checked.
+        if ($this->suppressRequestMail || $this->isForminatorDraft()) {
+            return $errors;
+        }
+
+        $blocked = is_array($errors) && is_array($fieldData) ? $this->findBlockedForminatorField($fieldData) : null;
+        if ($blocked === null) {
+            return $errors;
+        }
+
+        [$fieldId, $email] = $blocked;
+
+        $this->logBlock('forminator', $email);
+
+        if ($this->getFormAction() === 'reject') {
+            // Forminator's front end inserts the message as HTML.
+            $errors[] = [$fieldId => esc_html($this->getRejectMessage())];
+            return $errors;
+        }
+
+        $this->suppressRequestMail = true;
+
+        return $errors;
+    }
+
+    /**
+     * @param array<mixed> $fieldData
+     * @return array{0: string, 1: string}|null Field ID and the blocked address.
+     */
+    private function findBlockedForminatorField(array $fieldData): ?array
+    {
+        $fields = [];
+
+        foreach ($fieldData as $field) {
+            if (is_array($field) && isset($field['name'])) {
+                // A field copied in a repeated group is shown under the ID of the original.
+                $fields[] = [
+                        'id'    => !empty($field['field_array']['original_id']) ? $field['field_array']['original_id'] : $field['name'],
+                        'value' => $field['value'] ?? null,
+                ];
+            }
+        }
+
+        return $this->findBlockedSubmitter($fields);
+    }
+
+    /**
+     * Forminator's own condition: a visitor can't skip the check by posting "save_draft" to a form without drafts.
+     */
+    private function isForminatorDraft(): bool
+    {
+        if (!class_exists('Forminator_Front_Action')) {
+            return false;
+        }
+
+        $data = Forminator_Front_Action::$prepared_data;
+        $settings = Forminator_Front_Action::$module_settings;
+
+        return is_array($data) && is_array($settings)
+                && filter_var($data['save_draft'] ?? false, FILTER_VALIDATE_BOOLEAN)
+                && filter_var($settings['use_save_and_continue'] ?? false, FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * @param mixed $recipients
+     * @param mixed $notification
+     * @param mixed $preparedData
+     * @param mixed $form
+     * @param mixed $entry
+     * @return mixed
+     */
+    public function filterForminatorNotificationRecipients($recipients, $notification = null, $preparedData = null, $form = null, $entry = null)
+    {
+        // During the submission, the validation has already decided and logged it.
+        if ($this->suppressRequestMail || !is_object($entry) || !isset($entry->meta_data) || !is_array($entry->meta_data)) {
+            return $recipients;
+        }
+
+        $values = array_map(static fn ($meta) => is_array($meta) ? ($meta['value'] ?? null) : null, $entry->meta_data);
+
+        // Forminator skips a notification without recipients.
+        return $this->findBlockedValue($values) === null ? $recipients : [];
+    }
+
+    /* ==========================
+     * MetForm
+     * ========================== */
+
+    public function maybeInitMetForm(): void
+    {
+        if (!$this->isMetFormEnabled()) {
+            return;
+        }
+
+        // MetForm applies this filter (since 3.7.0) after its own field validation, before the captcha check,
+        // the integrations, the entry and the emails. A late priority leaves a rejection by another check alone.
+        add_filter('mf_after_validation_check', [$this, 'filterMetFormValidation'], PHP_INT_MAX);
+        // No MetForm hook runs at the end of every submission.
+        $this->endFormSubmissionWithRestRoute('/metform/v1/entries/insert/');
+    }
+
+    /**
+     * @param mixed $result ['is_valid' => bool, 'form_data' => submitted values by field name, 'file_data' => array]
+     * @return mixed
+     */
+    public function filterMetFormValidation($result)
+    {
+        if (!is_array($result) || empty($result['is_valid']) || !isset($result['form_data']) || !is_array($result['form_data'])) {
+            return $result;
+        }
+
+        $blocked = $this->findBlockedValue($result['form_data']);
+        if ($blocked === null) {
+            return $result;
+        }
+
+        $email = $blocked[1];
+
+        if ($this->getFormAction() === 'reject') {
+            $this->logBlock('metform', $email);
+            // MetForm can only show a form-level error message, not one at the field.
+            $result['is_valid'] = false;
+            $result['message'] = $this->getRejectMessage();
+            return $result;
+        }
+
+        // A payment-first form (MetForm Payment Assistant) is submitted again once the payment is completed:
+        // that submission is logged.
+        if (!$this->isMetFormPaymentFirstRequest($result['form_data'])) {
+            $this->logBlock('metform', $email);
+        }
+
+        $this->suppressRequestMail = true;
+
+        return $result;
+    }
+
+    /**
+     * MetForm's own condition, except for the payment method it reads from the form: the visitor-supplied flag
+     * alone must not hide a blocked submission from the log.
+     *
+     * @param array<mixed> $formData
+     */
+    private function isMetFormPaymentFirstRequest(array $formData): bool
+    {
+        return ($formData['mf_payment_first'] ?? '') === '1'
+                && is_callable(['Metform\Utils\Util', 'is_plugin_active'])
+                && \Metform\Utils\Util::is_plugin_active('metform-payment-assistant/metform-payment-assistant.php');
+    }
+
+    /* ==========================
+     * Ninja Forms
+     * ========================== */
+
+    public function maybeInitNinjaForms(): void
+    {
+        if (!$this->isNinjaFormsEnabled()) {
+            return;
+        }
+
+        // Ninja Forms applies this filter before it validates the fields one by one: an error added here is reported
+        // when the validation reaches that field, and no action (saving, emails) runs.
+        add_filter('ninja_forms_submit_data', [$this, 'filterNinjaFormsSubmitData']);
+        // A submission halted by a payment add-on is resumed in a later request, which skips the filter above and
+        // runs the remaining actions, the emails among them, with the stored values.
+        add_filter('ninja_forms_submission_actions', [$this, 'filterNinjaFormsSubmissionActions'], 10, 3);
+        // Every response to a submission, success or error, fires this right before the request ends.
+        add_action('ninja_forms_before_response', [$this, 'endFormSubmission']);
+    }
+
+    /**
+     * @param mixed $formData ['fields' => [field ID => ['value' => value, ...]], ...]
+     * @return mixed
+     */
+    public function filterNinjaFormsSubmitData($formData)
+    {
+        $blocked = is_array($formData) ? $this->findBlockedValue($this->ninjaFormsValues($formData)) : null;
+        if ($blocked === null) {
+            return $formData;
+        }
+
+        $this->logBlock('ninja_forms', $blocked[1]);
+
+        if ($this->getFormAction() === 'reject') {
+            // Ninja Forms only reports the errors of the form's own fields, so every blocked value gets one: a field
+            // added to the request can't take the error away from the real one. With this slug, the front end
+            // clears the error once the visitor changes the form; it would stay until a reload otherwise. The
+            // message is inserted as HTML.
+            foreach ($this->ninjaFormsValues($formData) as $fieldId => $value) {
+                if ($this->findBlockedValue([$fieldId => $value]) !== null) {
+                    $formData['errors']['fields'][$fieldId] = ['slug' => 'unique_field', 'message' => esc_html($this->getRejectMessage())];
+                }
+            }
+
+            return $formData;
+        }
+
+        $this->suppressRequestMail = true;
+
+        return $formData;
+    }
+
+    /**
+     * @param mixed $actions
+     * @param mixed $formCache
+     * @param mixed $formData
+     * @return mixed
+     */
+    public function filterNinjaFormsSubmissionActions($actions, $formCache = null, $formData = null)
+    {
+        // A resumed submission was logged when it was received.
+        if (is_array($formData) && $this->findBlockedValue($this->ninjaFormsValues($formData)) !== null) {
+            $this->suppressRequestMail = true;
+        }
+
+        return $actions;
+    }
+
+    /**
+     * @param array<mixed> $formData
+     * @return array<mixed> The submitted values by field ID.
+     */
+    private function ninjaFormsValues(array $formData): array
+    {
+        $fields = isset($formData['fields']) && is_array($formData['fields']) ? $formData['fields'] : [];
+
+        return array_map(static fn ($field) => is_array($field) ? ($field['value'] ?? null) : null, $fields);
+    }
+
+    /* ==========================
+     * SureForms
+     * ========================== */
+
+    public function maybeInitSureForms(): void
+    {
+        if (!$this->isSureFormsEnabled()) {
+            return;
+        }
+
+        // SureForms applies this filter (since 1.8.0) after its field validation, captcha and honeypot checks,
+        // before the entry and the emails. Priority 1: its Stripe integration captures the payment at priority 5.
+        add_filter('srfm_form_submit_data', [$this, 'filterSureFormsSubmitData'], 1);
+        $this->endFormSubmissionWithRestRoute('/sureforms/v1/submit-form');
+        // After a successful submission the browser makes another request, which runs the integrations of the
+        // stored entry (Pro, OttoKit) on this action; they may send emails. Forms that store no entries run
+        // it at the end of the submission request.
+        add_action('srfm_after_submission_process', [$this, 'beginSureFormsAfterSubmission'], 1);
+        add_action('srfm_after_submission_process', [$this, 'endFormSubmission'], PHP_INT_MAX);
+    }
+
+    /**
+     * @param mixed $formData Every submitted parameter, by name.
+     * @return mixed
+     */
+    public function filterSureFormsSubmitData($formData)
+    {
+        $blocked = is_array($formData) ? $this->findBlockedValue($this->sureFormsFields($formData)) : null;
+        if ($blocked === null) {
+            return $formData;
+        }
+
+        [$fieldName, $email] = $blocked;
+
+        $this->logBlock('sureforms', $email);
+
+        if ($this->getFormAction() === 'reject') {
+            // The response SureForms sends for its own validation errors; its front end shows the message
+            // (as HTML) above the submit button, not at the field. Returning an error from the filter wouldn't
+            // stop the Stripe capture.
+            $message = esc_html($this->getRejectMessage());
+            wp_send_json_error(['message' => $message, 'field_errors' => [$fieldName => $message]]);
+        }
+
+        $this->suppressRequestMail = true;
+
+        return $formData;
+    }
+
+    /**
+     * @param mixed $formData The stored entry's values by field name.
+     */
+    public function beginSureFormsAfterSubmission($formData): void
+    {
+        // Logged at the submission already.
+        if (is_array($formData) && $this->findBlockedValue($this->sureFormsFields($formData)) !== null) {
+            $this->suppressRequestMail = true;
+        }
+    }
+
+    /**
+     * The submitted form fields: their names are "srfm-{type}-{block ID}-lbl-{label}-{slug}". The other
+     * parameters (form ID, honeypot, captcha responses) are left out.
+     *
+     * @param array<mixed> $formData
+     * @return array<mixed>
+     */
+    private function sureFormsFields(array $formData): array
+    {
+        return array_filter(
+                $formData,
+                static fn ($name): bool => is_string($name) && strpos($name, '-lbl-') !== false,
+                ARRAY_FILTER_USE_KEY
+        );
+    }
+
+    /* ==========================
+     * Formidable Forms
+     * ========================== */
+
+    public function maybeInitFormidable(): void
+    {
+        if (!$this->isFormidableEnabled()) {
+            return;
+        }
+
+        // Formidable applies this filter once it has validated every field and checked the submission for spam,
+        // before the entry is created and its actions (emails) run in the same request.
+        add_filter('frm_validate_entry', [$this, 'filterFormidableValidation'], 10, 3);
+        // Fired once the entry has been created, before the confirmation (which may redirect and exit). A submission
+        // that fails ends its request without sending any email.
+        add_action('frm_process_entry', [$this, 'endFormSubmission'], PHP_INT_MAX);
+        // Every action of an entry passes here, also outside the submission: on a payment event (a webhook or a
+        // scheduled check), or when an administrator marks a spam entry as not spam.
+        add_filter('frm_skip_form_action', [$this, 'filterFormidableSkipFormAction'], 10, 2);
+    }
+
+    /**
+     * @param mixed $errors Error messages, by "field{ID}" for a field.
+     * @param mixed $values The submitted data, with the field values by field ID in "item_meta".
+     * @param mixed $args   "posted_fields": the fields of the submitted form (since Formidable 5.0.04).
+     * @return mixed
+     */
+    public function filterFormidableValidation($errors, $values, $args = [])
+    {
+        // A submission with errors (spam included) is checked when it is sent again. An update edits an existing
+        // entry (Formidable Pro); only "create" makes Formidable create one, whatever else is posted.
+        if ($errors !== [] || !is_array($values) || ($values['frm_action'] ?? '') === 'update' || !isset($values['item_meta']) || !is_array($values['item_meta'])) {
+            return $errors;
+        }
+
+        $blocked = $this->findBlockedValue($this->formidableFieldValues($values['item_meta'], $args));
+        if ($blocked === null) {
+            return $errors;
+        }
+
+        [$fieldId, $email] = $blocked;
+
+        $this->logBlock('formidable', $email);
+
+        if ($this->getFormAction() === 'reject') {
+            // The front end inserts the message as HTML.
+            return ['field' . $fieldId => esc_html($this->getRejectMessage())];
+        }
+
+        $this->suppressRequestMail = true;
+
+        return $errors;
+    }
+
+    /**
+     * Formidable posts its honeypot as a field too, so only the fields of the form are checked.
+     *
+     * @param array<mixed> $itemMeta Submitted values by field ID.
+     * @param mixed        $args
+     * @return array<mixed>
+     */
+    private function formidableFieldValues(array $itemMeta, $args): array
+    {
+        if (!is_array($args) || !isset($args['posted_fields']) || !is_array($args['posted_fields'])) {
+            return $itemMeta;
+        }
+
+        $fieldIds = [];
+        foreach ($args['posted_fields'] as $field) {
+            if (is_object($field) && isset($field->id)) {
+                $fieldIds[(int) $field->id] = true;
+            }
+        }
+
+        return array_intersect_key($itemMeta, $fieldIds);
+    }
+
+    /**
+     * @param mixed $skip
+     * @param mixed $args ['action' => the action's post, 'entry' => entry or entry ID, 'form' => ..., 'event' => ...]
+     * @return mixed
+     */
+    public function filterFormidableSkipFormAction($skip, $args = [])
+    {
+        // During the submission, the validation has already decided and logged it.
+        if ($skip || $this->suppressRequestMail || !is_array($args) || !isset($args['action']->post_excerpt) || $args['action']->post_excerpt !== 'email') {
+            return $skip;
+        }
+
+        $entry = $args['entry'] ?? null;
+        $entryId = is_object($entry) ? (int) ($entry->id ?? 0) : (int) $entry;
+
+        // The entry may come without its values (or as an ID only).
+        if ((!is_object($entry) || !isset($entry->metas)) && $entryId > 0 && class_exists('FrmEntry')) {
+            $entry = FrmEntry::getOne($entryId, true);
+        }
+
+        if (!is_object($entry) || !isset($entry->metas) || !is_array($entry->metas)) {
+            return $skip;
+        }
+
+        return $this->findBlockedValue($entry->metas) !== null;
     }
 
     /* ==========================

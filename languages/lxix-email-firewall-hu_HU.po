@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: lxix Email Firewall 1.1.0\n"
-"PO-Revision-Date: 2026-09-23 22:00+0200\n"
+"Project-Id-Version: lxix Email Firewall 1.2.0\n"
+"PO-Revision-Date: 2026-10-15 16:30+0200\n"
 "Last-Translator: lxix\n"
 "Language-Team: Hungarian\n"
 "Language: hu_HU\n"
@@ -71,6 +71,36 @@ msgstr "Fluent Forms-integráció"
 
 msgid "Enable Fluent Forms form blocking"
 msgstr "Tiltás engedélyezése a Fluent Forms-űrlapokon"
+
+msgid "Forminator integration"
+msgstr "Forminator-integráció"
+
+msgid "Enable Forminator form blocking"
+msgstr "Tiltás engedélyezése a Forminator-űrlapokon"
+
+msgid "MetForm integration"
+msgstr "MetForm-integráció"
+
+msgid "Enable MetForm form blocking"
+msgstr "Tiltás engedélyezése a MetForm-űrlapokon"
+
+msgid "Ninja Forms integration"
+msgstr "Ninja Forms-integráció"
+
+msgid "Enable Ninja Forms form blocking"
+msgstr "Tiltás engedélyezése a Ninja Forms-űrlapokon"
+
+msgid "SureForms integration"
+msgstr "SureForms-integráció"
+
+msgid "Enable SureForms form blocking"
+msgstr "Tiltás engedélyezése a SureForms-űrlapokon"
+
+msgid "Formidable Forms integration"
+msgstr "Formidable Forms-integráció"
+
+msgid "Enable Formidable Forms form blocking"
+msgstr "Tiltás engedélyezése a Formidable Forms-űrlapokon"
 
 msgid "Blocked form submissions"
 msgstr "Tiltott címről érkező űrlapbeküldések"

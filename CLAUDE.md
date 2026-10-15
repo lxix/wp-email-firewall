@@ -1,6 +1,6 @@
 # lxix Email Firewall
 
-WordPress plugin (slug and text domain: `lxix-email-firewall`) that suppresses emails to blocked addresses and domains. It filters the recipients of every `wp_mail()` call, and handles form submissions (Elementor Pro, WPForms, Contact Form 7, Fluent Forms) and WooCommerce emails. License: Apache-2.0.
+WordPress plugin (slug and text domain: `lxix-email-firewall`) that suppresses emails to blocked addresses and domains. It filters the recipients of every `wp_mail()` call, and handles form submissions (Elementor Pro, WPForms, Contact Form 7, Fluent Forms, Forminator, MetForm, Ninja Forms, SureForms, Formidable Forms) and WooCommerce emails. License: Apache-2.0.
 
 It was called WP Email Firewall (`wp-email-firewall`) until WordPress.org submission: WordPress.org doesn't allow "WP" in plugin names and slugs. The WordPress.org review then found "Email Firewall" (`email-firewall`) too generic, and asked for a distinctive term at the start of the name: `lxix` is the author's WordPress.org username. Keep this name in the plugin header, the readme and the UI; the slug can't change after the approval. The GitHub repository and the Docker project kept the old name. The `wpef_` prefix stayed too, so the settings and the log of earlier installs carry over.
 
@@ -17,8 +17,8 @@ It was called WP Email Firewall (`wp-email-firewall`) until WordPress.org submis
 ## Conventions
 
 - The code is self-documenting. Class, method and variable names say what the code does. Comments only explain *why*: WordPress or third-party plugin quirks, ordering constraints and non-obvious decisions. They never restate the code. If code needs a "what" comment, give it a better name or extract a small method instead.
-- Prefix everything global: `wpef_` for options, hooks, cron events, nonces and the settings group; `wpef-` for HTML ids and CSS classes; `WPEF_` for classes. The log table is `{$wpdb->prefix}wpef_log`.
-- A new setting is registered in `registerSettings()`. Every option, internal ones like `wpef_db_version` included, is deleted in `uninstall.php`.
+- Prefix everything global: `wpef_` for options, hooks, cron events, nonces, meta keys and the settings group; `wpef-` for HTML ids and CSS classes; `WPEF_` for classes. The log table is `{$wpdb->prefix}wpef_log`.
+- A new setting is registered in `registerSettings()`. Every option, internal ones like `wpef_db_version` included, is deleted in `uninstall.php`, and so is any other data the plugin stores, like the `wpef_logged` meta on Fluent Forms entries.
 - A removed option stays in the `uninstall.php` list, and an upgrade step in `install()` deletes it (bump `DB_VERSION` for it).
 - Stay compatible with PHP 7.4 and WordPress 6.0 (see the plugin header). PHP 8 syntax is not allowed: no named arguments, `match`, union types, constructor promotion or nullsafe operator.
 - `declare(strict_types=1)`, 4-space indentation, UTF-8, LF line endings (enforced by `.gitattributes`).
@@ -34,14 +34,16 @@ The repository is mounted read-only as the plugin directory, so code changes tak
 
 ```bash
 test-env/setup.sh                            # start, install WordPress, activate the plugin
-test-env/setup.sh woocommerce wpforms-lite contact-form-7 fluentform plugin-check   # the same, plus these wordpress.org plugins
+test-env/setup.sh woocommerce wpforms-lite contact-form-7 fluentform forminator elementor metform ninja-forms sureforms formidable plugin-check   # the same, plus these wordpress.org plugins
 test-env/wp <command>                        # WP-CLI inside the container
 docker compose -f test-env/docker-compose.yml down -v   # stop and wipe everything
 ```
 
 - WordPress: http://localhost:8080/wp-admin/ (admin / admin). The ports can be changed with `WP_PORT` and `MAILPIT_PORT`.
 - Every email is delivered to Mailpit (`test-env/mu-plugins/mailpit.php`). The UI is at http://localhost:8025. List the messages with `curl -s localhost:8025/api/v1/messages` and delete them with `curl -s -X DELETE localhost:8025/api/v1/messages`.
-- Elementor forms need Elementor Pro, a paid plugin that can't be installed from wordpress.org.
+- Elementor forms need Elementor Pro, a paid plugin that can't be installed from wordpress.org. MetForm needs the free Elementor (`elementor`).
+- Some plugins (Formidable, WP Mail SMTP) create their tables and sample forms only when an administrator opens wp-admin.
+- Queued work (WP Mail SMTP, Fluent Forms, WPForms) runs with `test-env/wp action-scheduler run --group=<group>`. If it says the group doesn't exist, finish Action Scheduler's store migration first: `test-env/wp action-scheduler migrate`.
 - WP-CLI commands, including `wp db query`, load the active plugin, and loading it recreates its table and options. Deactivate the plugin before you test `uninstall.php`.
 
 Examples:

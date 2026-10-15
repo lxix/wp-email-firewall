@@ -4,7 +4,7 @@ Tags: email, blocklist, spam, contact form, woocommerce
 Requires at least: 6.0
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.1.0
+Stable tag: 1.2.0
 License: Apache-2.0
 License URI: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -28,6 +28,13 @@ When a form submission contains a blocked email address, lxix Email Firewall eit
 * WPForms
 * Contact Form 7
 * Fluent Forms
+* Forminator
+* MetForm
+* Ninja Forms
+* SureForms
+* Formidable Forms
+
+The error message is shown at the field that holds the blocked address; MetForm and SureForms show it with the other messages of the form. Emails that a form plugin sends later for an accepted submission, for example after a payment, are suppressed too.
 
 Each integration can be turned off in the settings.
 
@@ -59,6 +66,14 @@ One per line, or separated by commas. A domain can also be written as `*.example
 
 Yes. Blocked recipients are removed from the email before the mailer plugin gets it. Some mailer plugins report an email as failed when every recipient was blocked; the email is still not sent.
 
+= Does it stop emails sent by email marketing services? =
+
+No. Services like MailerLite, Mailchimp or Klaviyo send their emails from their own servers, not through WordPress, so lxix Email Firewall doesn't see them. It doesn't stop their plugins from passing the addresses of your customers and form users to the service either: block or unsubscribe these addresses in the service itself.
+
+= Why does the order of a blocked customer have no PDF invoice? =
+
+Invoice plugins that create the invoice when they attach it to an email, like PDF Invoices & Packing Slips for WooCommerce, don't create it when WooCommerce skips the email to the blocked customer. Attach the invoice to the New order email too, or create it by hand on the order's page.
+
 = Do Elementor forms need Elementor Pro? =
 
 Yes, forms are an Elementor Pro feature.
@@ -69,9 +84,13 @@ Every field of the submission. If any of them holds a blocked email address, the
 
 = What is removed when I delete the plugin? =
 
-Its settings, its log table and its scheduled cleanup task, on every site of a multisite network.
+Its settings, its log table, its scheduled cleanup task and the marks it adds to logged Fluent Forms entries, on every site of a multisite network.
 
 == Changelog ==
+
+= 1.2.0 =
+* New: Forminator, MetForm, Ninja Forms, SureForms and Formidable Forms integrations.
+* Fluent Forms notifications sent after the submission (after a payment, or from the background queue) are suppressed too when the entry holds a blocked email address.
 
 = 1.1.0 =
 * New: Contact Form 7 and Fluent Forms integrations.
